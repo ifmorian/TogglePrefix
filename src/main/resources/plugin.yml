@@ -1,0 +1,4 @@
+name: TogglePrefix
+author: Felix Kurz
+version: 1.0
+main: de.felix_kurz.toggleprefix.main.Main
