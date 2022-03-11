@@ -1,5 +1,6 @@
 package de.felix_kurz.toggleprefix.configuration;
 
+import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.main.Main;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -31,18 +32,17 @@ public class ConfigManager {
         if(cfg.get("useColorTranslate") == null) cfg.set("useColorTranslate", true);
         if(cfg.get("chatFormat") == null) cfg.set("chatFormat", "%chatPrefix%%playerName% &8>> &7%message%");
         if(cfg.get("autoUpdate") == null) cfg.set("autoUpdate", true);
-        if(cfg.get("prefixes") == null) {
-            List<String> defaultRanks = new ArrayList<>();
-            defaultRanks.add("owner;&4Owner &7>> &4;&4Owner &7- &4");
-            defaultRanks.add("default;&4Player &7>> &4;&4Play &7- &4");
-            cfg.set("prefixes", defaultRanks);
-        }
-        if(cfg.get("toggleprefix") == null) {
-            List<String> defaultPermissions = new ArrayList<>();
-            defaultPermissions.add("owner;owner,default");
-            cfg.set("toggleprefix", defaultPermissions);
-        }
         save();
+    }
+
+    public MySQL loadDatabase() {
+        String dbHost = cfg.getString("database.dbHost");
+        String dbPort = cfg.getString("database.dbPort");
+        String dbName = cfg.getString("database.dbName");
+        String username = cfg.getString("database.username");
+        String password = cfg.getString("database.password");
+
+        return new MySQL(dbHost, dbPort, dbName, username, password, plugin);
     }
 
     public FileConfiguration getConfig() {
@@ -53,4 +53,8 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+    public void setPrefixes(List<String> prefixes) {
+        cfg.set("prefixes", prefixes);
+        save();
+    }
 }

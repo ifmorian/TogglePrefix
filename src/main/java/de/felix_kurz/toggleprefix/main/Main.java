@@ -1,28 +1,24 @@
 package de.felix_kurz.toggleprefix.main;
 
-import de.felix_kurz.toggleprefix.commands.ToggleCommand;
+import de.felix_kurz.toggleprefix.commands.TogglePrefixCommand;
 import de.felix_kurz.toggleprefix.configuration.ConfigManager;
-import de.felix_kurz.toggleprefix.databases.SQLite;
+import de.felix_kurz.toggleprefix.databases.MySQL;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
 
     public static final String PRE = "§f[§9TogglePrefix§f] ";
-    private SQLite sqlite;
+    private MySQL mysql;
     private ConfigManager cfgM;
 
     public void onEnable() {
         cfgM = new ConfigManager(this);
         cfgM.loadConfig();
 
-        sqlite = new SQLite();
-        sqlite.connect();
+        mysql = cfgM.loadDatabase();
+        mysql.connect();
 
-        getCommand("toggle").setExecutor(new ToggleCommand(this.cfgM));
-    }
-
-    public SQLite getSqlite() {
-        return sqlite;
+        getCommand("toggleprefix").setExecutor(new TogglePrefixCommand(this.cfgM));
     }
 
     public ConfigManager getCfgM() {
