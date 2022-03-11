@@ -7,6 +7,7 @@ public class PermissionManager {
 
     public static boolean checkPermission(CommandSender sender, String permission) {
         if(!sender.hasPermission(permission)) {
+
             sender.sendMessage(Main.PRE + "§cYou don't have the required permission.");
             return false;
         }
