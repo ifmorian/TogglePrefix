@@ -32,6 +32,13 @@ public class ConfigManager {
         if(cfg.get("useColorTranslate") == null) cfg.set("useColorTranslate", true);
         if(cfg.get("chatFormat") == null) cfg.set("chatFormat", "%chatPrefix%%playerName% &8>> &7%message%");
         if(cfg.get("autoUpdate") == null) cfg.set("autoUpdate", true);
+        if(cfg.get("database") == null) {
+            cfg.set("database.dbHost", "localhost");
+            cfg.set("database.dbPort", "3306");
+            cfg.set("database.dbName", "toggleprefix");
+            cfg.set("database.username", "root");
+            cfg.set("database.dbHost", "");
+        }
         save();
     }
 

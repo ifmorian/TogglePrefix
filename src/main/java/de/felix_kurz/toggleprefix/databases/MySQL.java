@@ -2,11 +2,14 @@ package de.felix_kurz.toggleprefix.databases;
 
 import de.felix_kurz.toggleprefix.main.Main;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class MySQL {
 
@@ -20,6 +23,8 @@ public class MySQL {
 
     private Connection conn;
 
+    private ConsoleCommandSender c;
+
     public MySQL(String dbHost, String dbPort, String dbName, String username, String password, Main plugin) {
         this.dbHost = dbHost;
         this.dbPort = dbPort;
@@ -27,6 +32,8 @@ public class MySQL {
         this.username = username;
         this.password = password;
         this.plugin = plugin;
+
+        this.c = Bukkit.getConsoleSender();
     }
 
     public void connect() {
@@ -34,7 +41,7 @@ public class MySQL {
         try {
             conn = DriverManager.getConnection(url, username, password);
 
-            Bukkit.getLogger().info("Connected to database");
+            c.sendMessage(Main.PRE + "Connected to database §6" + dbName);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             return;
@@ -48,8 +55,6 @@ public class MySQL {
                         ");";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.execute();
-
-            Bukkit.getLogger().info("Setup table prefixes");
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
         }
@@ -60,10 +65,20 @@ public class MySQL {
                         ");";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.execute();
-
-            Bukkit.getLogger().info("Setup table players");
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
+        }
+        syncConfig();
+    }
+
+    public void disconnect() {
+        if(conn != null) {
+            try {
+                conn.close();
+                c.sendMessage(Main.PRE + "Disconnected from database §6" + dbName);
+            } catch (SQLException e) {
+                Bukkit.getLogger().warning(e.getMessage());
+            }
         }
     }
 
@@ -72,7 +87,7 @@ public class MySQL {
             @Override
             public void run() {
                 try {
-                    String sql = "INSERT INTO prefixes(name, chat, tablist, item) VALUES('?','?','?','?')";
+                    String sql = "INSERT INTO prefixes(name, chat, tablist, item) VALUES(?,?,?,?)";
                     PreparedStatement stmt = conn.prepareStatement(sql);
 
                     stmt.setString(1, name);
@@ -81,6 +96,7 @@ public class MySQL {
                     stmt.setString(4, item);
 
                     stmt.execute();
+                    c.sendMessage(Main.PRE + "§aAdded prefix §6" + name);
                     syncConfig();
                 } catch (SQLException e) {
                     Bukkit.getLogger().warning(e.getMessage());
@@ -94,12 +110,34 @@ public class MySQL {
             @Override
             public void run() {
                 try {
-                    String sql = "DELETE FROM prefixes WHERE name='?'";
+                    String sql = "DELETE FROM prefixes WHERE name=?";
                     PreparedStatement stmt = conn.prepareStatement(sql);
 
                     stmt.setString(1, name);
 
                     stmt.execute();
+                    c.sendMessage(Main.PRE + "§aDeleted prefix §6" + name);
+                    syncConfig();
+                } catch (SQLException e) {
+                    Bukkit.getLogger().warning(e.getMessage());
+                }
+            }
+        }.runTaskAsynchronously(plugin);
+    }
+
+    public void editPrefix(String name, String col, String value) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    String sql = "UPDATE prefixes SET " + col + "=? WHERE name=?";
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+
+                    stmt.setString(1, value);
+                    stmt.setString(2, name);
+
+                    stmt.execute();
+                    c.sendMessage(Main.PRE + "§aSet §b" + col + " §aof prefix §6" + name + " §ato §b" + value);
                     syncConfig();
                 } catch (SQLException e) {
                     Bukkit.getLogger().warning(e.getMessage());
@@ -109,7 +147,6 @@ public class MySQL {
     }
 
     private void syncConfig() {
-        final ResultSet[] rs = {null};
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -125,8 +162,9 @@ public class MySQL {
                                 rs.getString("tablist") + ";" + rs.getString("item"));
                     }
                     plugin.getCfgM().setPrefixes(prefixes);
+                    c.sendMessage(Main.PRE + "Config.yml synced with database §6" + dbName);
                 } catch (SQLException e) {
-                    Bukkit.getLogger().info("Config.yml could not be updated.");
+                    c.sendMessage(Main.PRE + "§cConfig.yml could not be updated");
                     Bukkit.getLogger().warning(e.getMessage());
                 }
             }

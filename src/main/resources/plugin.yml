@@ -5,4 +5,4 @@ main: de.felix_kurz.toggleprefix.main.Main
 softdepend: [LuckPerms]
 
 commands:
-  toggle:
+  toggleprefix:

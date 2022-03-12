@@ -1,14 +1,13 @@
 package de.felix_kurz.toggleprefix.permissions;
 
 import de.felix_kurz.toggleprefix.main.Main;
-import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class PermissionManager {
 
-    public static boolean checkPermission(CommandSender sender, String permission) {
+    public static boolean checkPermission(Player sender, String permission, boolean msg) {
         if(!sender.hasPermission(permission)) {
-
-            sender.sendMessage(Main.PRE + "§cYou don't have the required permission.");
+            if(msg) sender.sendMessage(Main.PRE + "§cYou do not have the permission to do that");
             return false;
         }
         return true;
