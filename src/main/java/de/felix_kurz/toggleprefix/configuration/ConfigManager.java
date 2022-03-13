@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ConfigManager {
 
-    private Main plugin;
+    private final Main plugin;
     private FileConfiguration cfg;
 
     public ConfigManager(Main plugin) {
@@ -22,15 +22,11 @@ public class ConfigManager {
         List<String> configHeader = new ArrayList<>();
         configHeader.add("TogglePrefix by Felix Kurz");
         configHeader.add("Version 1.0");
+        configHeader.add("");
+        configHeader.add("You may need to restart or reload the server for changes to take effect.");
         cfg.options().setHeader(configHeader);
 
-        List<String> configFooter = new ArrayList<>();
-        configFooter.add("It is possible to handle permissions to the default group but it is highly not recommended. Every user without a LuckPerm group would be able to edit the prefix of the given groups.");
-        configFooter.add("Version 1.0");
-
-        if(cfg.get("useChatFormat") == null) cfg.set("useChatFormat", true);
         if(cfg.get("useColorTranslate") == null) cfg.set("useColorTranslate", true);
-        if(cfg.get("chatFormat") == null) cfg.set("chatFormat", "%chatPrefix%%playerName% &8>> &7%message%");
         if(cfg.get("autoUpdate") == null) cfg.set("autoUpdate", true);
         if(cfg.get("database") == null) {
             cfg.set("database.dbHost", "localhost");
@@ -52,16 +48,11 @@ public class ConfigManager {
         return new MySQL(dbHost, dbPort, dbName, username, password, plugin);
     }
 
-    public FileConfiguration getConfig() {
-        return cfg;
+    public boolean useColorTranslate() {
+        return cfg.getBoolean("useColorTranslate");
     }
 
     public void save() {
         plugin.saveConfig();
-    }
-
-    public void setPrefixes(List<String> prefixes) {
-        cfg.set("prefixes", prefixes);
-        save();
     }
 }

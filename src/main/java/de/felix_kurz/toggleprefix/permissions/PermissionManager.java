@@ -5,12 +5,12 @@ import org.bukkit.entity.Player;
 
 public class PermissionManager {
 
-    public static boolean checkPermission(Player sender, String permission, boolean msg) {
+    public static boolean isNotPermit(Player sender, String permission, boolean msg) {
         if(!sender.hasPermission(permission)) {
             if(msg) sender.sendMessage(Main.PRE + "§cYou do not have the permission to do that");
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
 }
