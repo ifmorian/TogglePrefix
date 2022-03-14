@@ -1,7 +1,6 @@
 package de.felix_kurz.toggleprefix.databases;
 
 import de.felix_kurz.toggleprefix.main.Main;
-import oracle.jdbc.proxy.annotation.Pre;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -113,77 +112,75 @@ public class MySQL {
         }
     }
 
-    public void addPrefix(String name, String chat, String item, String priority, Player p) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    String sql = "SELECT name FROM prefixes WHERE name=?";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
+    public boolean exists(String table, String col, String value) {
+        try {
+            String sql = "SELECT " + col + " FROM " + table + " WHERE " + col + "=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
 
-                    stmt.setString(1, name);
+            stmt.setString(1, value);
 
-                    if(stmt.executeQuery().next()) {
-                        p.sendMessage(Main.PRE + "§cPrefix §6" + name + " §calready exists");
-                        return;
-                    }
-                } catch (SQLException e) {
-                    Bukkit.getLogger().warning(e.getMessage());
-                    return;
-                }
-                try {
-                    String sql = "INSERT INTO prefixes(name,display,chat,tablist,item,priority) VALUES(?,?,?,?,?,?)";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
-
-                    stmt.setString(1, name);
-                    stmt.setString(2, name);
-                    stmt.setString(3, chat);
-                    stmt.setString(4, chat);
-                    stmt.setString(5, item);
-                    stmt.setString(6, priority);
-
-                    stmt.execute();
-                    c.sendMessage(Main.PRE + "§aAdded prefix §6" + name);
-                    p.sendMessage(Main.PRE + "§aAdded prefix §6" + name);
-                } catch (SQLException e) {
-                    Bukkit.getLogger().warning(e.getMessage());
-                }
-            }
-        }.runTaskAsynchronously(plugin);
+            return stmt.executeQuery().next();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+        }
+        return false;
     }
 
-    public void deletePrefix(String name, Player p) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    String sql = "SELECT name FROM prefixes WHERE name=?";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
+    public boolean addPrefix(String name, String chat, String item, String priority) {
+        try {
+            String sql = "INSERT INTO prefixes(name,display,chat,tablist,item,priority) VALUES(?,?,?,?,?,?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
 
-                    stmt.setString(1, name);
+            stmt.setString(1, name);
+            stmt.setString(2, name);
+            stmt.setString(3, chat);
+            stmt.setString(4, chat);
+            stmt.setString(5, item);
+            stmt.setString(6, priority);
 
-                    if(!stmt.executeQuery().next()) {
-                        p.sendMessage(Main.PRE + "§cPrefix §6" + name + " §cdoes not exists");
-                        return;
-                    }
-                } catch (SQLException e) {
-                    Bukkit.getLogger().warning(e.getMessage());
-                    return;
-                }
-                try {
-                    String sql = "DELETE FROM prefixes WHERE name=?";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.execute();
 
-                    stmt.setString(1, name);
+            c.sendMessage(Main.PRE + "§aAdded prefix §6" + name);
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return false;
+        }
+    }
 
-                    stmt.execute();
-                    c.sendMessage(Main.PRE + "§aDeleted prefix §6" + name);
-                    p.sendMessage(Main.PRE + "§aDeleted prefix §6" + name);
-                } catch (SQLException e) {
-                    Bukkit.getLogger().warning(e.getMessage());
-                }
-            }
-        }.runTaskAsynchronously(plugin);
+    public boolean delete(String table, String key, String keyValue) {
+        try {
+            String sql = "DELETE FROM " + table + " WHERE " + key + "=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, keyValue);
+
+            stmt.execute();
+
+            c.sendMessage(Main.PRE + "§aDeleted §6" + keyValue + " §cfrom table §b" + table);
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean edit(String table, String key, String keyValue, String col, String value) {
+        try {
+            String sql = "UPDATE " + table + " SET " + col + "=? WHERE " + key + "=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, value);
+            stmt.setString(2, keyValue);
+
+            stmt.execute();
+
+            c.sendMessage(Main.PRE + "§aSet §3" + col + " §aof §6" + keyValue + " §ato §3" + value + " §ain table §b" + table);
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return false;
+        }
     }
 
     public void editPrefix(String name, String col, String value, Player p) {
