@@ -3,12 +3,12 @@ package de.felix_kurz.toggleprefix.commands;
 import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.main.Main;
 import de.felix_kurz.toggleprefix.permissions.PermissionManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
@@ -16,11 +16,11 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player p)) {
-            sender.sendMessage(Main.PRE + "You have to be a player to issue this command");
+            sender.sendMessage(Main.PRE + "Du musst ein Spieler sein, um dieses Command auszuführen");
             return false;
         }
         if (args.length == 0) {
-            p.sendMessage(Main.PRE + "§9Use §6/toggleprefix help §9for more information");
+            p.sendMessage(Main.PRE + "§9Benutze §6/toggleprefix help §9für mehr Informationen");
             return false;
         }
         new BukkitRunnable() {
@@ -111,7 +111,7 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
                         if (args.length < 2) {
                             p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank [new/delete/addprefix/removeprefix/edit]\n" +
-                                    " §7-> §bnew §7- §9Create a new rank" +
+                                    " §7-> §bnew §7- §9Erstellt einen neuen Rang" +
                                     " §7-> §bdelete §7- §9Delete a rank" +
                                     " §7-> §baddprefix §7- §9CAdd a prefix to a rank" +
                                     " §7-> §bremoveprefix §7- §9Removes a prefix from a rank" +
@@ -129,58 +129,82 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                                     p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §calready exists");
                                     return;
                                 }
+                                String notExistentPrefix = prefixNotExists(args[3]);
+                                if(notExistentPrefix != null) {
+                                    p.sendMessage(Main.PRE + "§cPrefix §6" + notExistentPrefix + " §cdoes not exists");
+                                    return;
+                                }
                                 if(mySQL.addRank(args[2], args[3], args[4])) {
                                     p.sendMessage(Main.PRE + "§aAdded rank §6" + args[2]);
                                 } else
                                     error(p);
                                 break;
                             case "delete":
-                                if(args.length != 3) {
+                                if (args.length != 3) {
                                     p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank delete <name>");
                                     return;
                                 }
-                                if(!mySQL.exists("ranks", "name", args[2])) {
+                                if (!mySQL.exists("ranks", "name", args[2])) {
                                     p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
                                     return;
                                 }
-                                if(mySQL.delete("ranks", "name", args[2])) {
+                                if (mySQL.delete("ranks", "name", args[2])) {
                                     p.sendMessage(Main.PRE + "§aDeleted rank §6" + args[2]);
                                 } else
                                     error(p);
                                 break;
                             case "addprefix":
-                                if(args.length != 4) {
+                                if (args.length != 4) {
                                     p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank addprefix <rank> <prefix1,prefix2,...>");
                                     return;
                                 }
-                                if(!mySQL.exists("ranks", "name", args[2])) {
+                                if (!mySQL.exists("ranks", "name", args[2])) {
                                     p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
                                     return;
                                 }
-                                String[] pres = args[3].split(",");
-                                for(String pre : pres) {
-                                    if(!mySQL.exists("prefixes", "name", pre)) {
-                                        p.sendMessage(Main.PRE + "§cPrefix §6" + pre + " §cdoes not exists");
-                                        return;
-                                    }
-                                }
-                                String prefixes = mySQL.getRankPrefixes(args[2]);
-                                if(prefixes == null) {
-                                    error(p);
+
+                                String notExistentPrefix1 = prefixNotExists(args[3]);
+                                if (notExistentPrefix1 != null) {
+                                    p.sendMessage(Main.PRE + "§cPrefix §6" + notExistentPrefix1 + " §cdoes not exists");
                                     return;
                                 }
-                                prefixes += "," + args[3];
-                                if(mySQL.edit("ranks", "name", args[2], "prefixes", prefixes)) {
+                                String prefixes = joinPrefixes(args[3], mySQL.getRankPrefixes(args[2]));
+                                if (mySQL.edit("ranks", "name", args[2], "prefixes", prefixes)) {
                                     p.sendMessage(Main.PRE + "§aAdded prefixes §3" + args[3] + " §ato rank §6" + args[2] + "\n" +
                                             "§3(" + prefixes + ")");
                                 } else
                                     error(p);
                                 break;
                             case "removeprefix":
-                                if(args.length != 4) {
+                                if (args.length != 4) {
                                     p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank removeprefix <rank> <prefix1,prefix2,...>");
                                     return;
                                 }
+                                if (!mySQL.exists("ranks", "name", args[2])) {
+                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
+                                    return;
+                                }
+                                String[] prefixes1 =  mySQL.getRankPrefixes(args[2]).split(",");
+                                for (int i = 0; i < prefixes1.length; i++) {
+                                    for (String s : args[3].split(",")) {
+                                        if (prefixes1[i].equals(s)) {
+                                            prefixes1[i] = null;
+                                            break;
+                                        }
+                                    }
+                                }
+                                StringBuilder prefixesR = new StringBuilder();
+                                for (String s : prefixes1) {
+                                    if (s != null) {
+                                        prefixesR.append(",").append(s);
+                                    }
+                                }
+                                prefixesR.delete(0, 1);
+                                if (mySQL.edit("ranks", "name", args[2], "prefixes", prefixesR.toString())) {
+                                p.sendMessage(Main.PRE + "§aPräfix(e) §3" + args[3] + " §avon Rang §6" + args[2] + " §aentfernt\n" +
+                                        "§3(" + prefixesR + ")");
+                                } else
+                                    error(p);
                                 break;
                             case "edit":
                                 break;
@@ -218,4 +242,30 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
     public void error(Player p) {
         p.sendMessage(Main.PRE + "§cSomething went wrong");
     }
+
+    public String prefixNotExists(String prefixes) {
+        String[] prefixesArray = prefixes.split(",");
+        for (String prefix : prefixesArray) {
+            if (!plugin.getMysql().exists("prefixes", "name", prefix)) {
+                return prefix;
+            }
+        }
+        return null;
+    }
+
+    public String joinPrefixes(String newPrefixes, String oldPrefixes) {
+        StringBuilder prefixes = new StringBuilder(oldPrefixes);
+        String[] oldPrefixesArray = oldPrefixes.split(",");
+        String[] newPrefixesArray = newPrefixes.split(",");
+        mainloop: for (String newPrefix : newPrefixesArray) {
+            for (String oldPrefix : oldPrefixesArray) {
+                if (newPrefix.equals(oldPrefix)) {
+                    continue mainloop;
+                }
+            }
+            prefixes.append(",").append(newPrefix);
+        }
+        return prefixes.toString();
+    }
+
 }
