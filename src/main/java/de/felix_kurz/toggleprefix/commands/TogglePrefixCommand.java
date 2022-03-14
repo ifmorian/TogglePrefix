@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
@@ -48,7 +49,8 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                             return;
                         }
                         if (Material.getMaterial(args[args.length - 2]) == null) {
-                            p.sendMessage(Main.PRE + "§cEnter a valid itemstack");
+                            p.sendMessage(Main.PRE + "§cEnter a valid itemstack\n" +
+                                    "§3hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html");
                             return;
                         }
                         String chat = argsToString(args, 2, args.length - 3);
@@ -60,7 +62,7 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                         if (mySQL.addPrefix(args[1], chat, args[args.length - 2], args[args.length - 1])) {
                             p.sendMessage(Main.PRE + "§aAdded prefix §6" + args[1]);
                         } else
-                            p.sendMessage(Main.PRE + "§cSomething went wrong");
+                            error(p);
                         break;
                     case "delete":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
@@ -73,10 +75,10 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                             p.sendMessage(Main.PRE + "§cPrefix §6" + args[1] + " §cdoes not exists");
                             return;
                         }
-                        if (mySQL.delete("prefix", "name", args[1])) {
+                        if (mySQL.delete("prefixes", "name", args[1])) {
                             p.sendMessage(Main.PRE + "§aDeleted prefix §6" + args[1]);
                         } else
-                            p.sendMessage(Main.PRE + "§cSomething went wrong");
+                            error(p);
                         break;
                     case "edit":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
@@ -90,8 +92,9 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                             return;
                         }
                         String value = argsToString(args, 3, args.length - 1);
-                        if (args[2].equals("item") && Material.getMaterial(args[3]) == null) {
-                            p.sendMessage(Main.PRE + "§cEnter a valid itemstack");
+                        if (args[2].equals("item") && Material.getMaterial(value) == null) {
+                            p.sendMessage(Main.PRE + "§cEnter a valid itemstack\n" +
+                                    "§3hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html");
                             return;
                         }
                         if(args[2].equals("priority")) if (isNoValidPriority(value, p)) return;
@@ -102,7 +105,7 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                         if(mySQL.edit("prefixes", "name", args[1], args[2], value)) {
                             p.sendMessage(Main.PRE + "§aSet §3" + args[2] + " §aof prefix §6" + args[1] + " §ato §3" + value);
                         } else
-                            p.sendMessage(Main.PRE + "§cSomething went wrong");
+                            error(p);
                         break;
                     case "rank":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
@@ -122,23 +125,62 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                                     return;
                                 }
                                 if (isNoValidPriority(args[4], p)) return;
-                                plugin.getMysql().addRank(args[2], args[3], args[4], p);
+                                if (mySQL.exists("ranks", "name", args[2])) {
+                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §calready exists");
+                                    return;
+                                }
+                                if(mySQL.addRank(args[2], args[3], args[4])) {
+                                    p.sendMessage(Main.PRE + "§aAdded rank §6" + args[2]);
+                                } else
+                                    error(p);
                                 break;
                             case "delete":
                                 if(args.length != 3) {
                                     p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank delete <name>");
                                     return;
                                 }
-                                mySQL.deleteRank(args[2], p);
+                                if(!mySQL.exists("ranks", "name", args[2])) {
+                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
+                                    return;
+                                }
+                                if(mySQL.delete("ranks", "name", args[2])) {
+                                    p.sendMessage(Main.PRE + "§aDeleted rank §6" + args[2]);
+                                } else
+                                    error(p);
                                 break;
                             case "addprefix":
                                 if(args.length != 4) {
                                     p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank addprefix <rank> <prefix1,prefix2,...>");
                                     return;
                                 }
-                                mySQL.addPrefixToRank(args[2], args[3], p);
+                                if(!mySQL.exists("ranks", "name", args[2])) {
+                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
+                                    return;
+                                }
+                                String[] pres = args[3].split(",");
+                                for(String pre : pres) {
+                                    if(!mySQL.exists("prefixes", "name", pre)) {
+                                        p.sendMessage(Main.PRE + "§cPrefix §6" + pre + " §cdoes not exists");
+                                        return;
+                                    }
+                                }
+                                String prefixes = mySQL.getRankPrefixes(args[2]);
+                                if(prefixes == null) {
+                                    error(p);
+                                    return;
+                                }
+                                prefixes += "," + args[3];
+                                if(mySQL.edit("ranks", "name", args[2], "prefixes", prefixes)) {
+                                    p.sendMessage(Main.PRE + "§aAdded prefixes §3" + args[3] + " §ato rank §6" + args[2] + "\n" +
+                                            "§3(" + prefixes + ")");
+                                } else
+                                    error(p);
                                 break;
                             case "removeprefix":
+                                if(args.length != 4) {
+                                    p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank removeprefix <rank> <prefix1,prefix2,...>");
+                                    return;
+                                }
                                 break;
                             case "edit":
                                 break;
@@ -171,5 +213,9 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
             value.append(" ").append(args[i]);
         }
         return value.toString();
+    }
+
+    public void error(Player p) {
+        p.sendMessage(Main.PRE + "§cSomething went wrong");
     }
 }
