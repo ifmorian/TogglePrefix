@@ -254,51 +254,55 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                         break;
                     case "player":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.admin", true)) return;
-                        if (args.length < 2) {
-                            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player [§esetrank§6/§esetprefix§6/§eaddprefix§6/§eremoveprefix§6]\n" +
+                        if (args.length < 3) {
+                            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player <§eplayer§6> [§esetrank§6/§esetprefix§6/§eaddprefix§6/§eremoveprefix§6]\n" +
                                     " §7-> §bsetrank §7- §9Setzt den Rang eines Spielers\n" +
                                     " §7-> §bsetprefix §7- §9Setzt den Präfix eines Spielers\n" +
                                     " §7-> §baddprefix §7- §9Fügt verfügbare Präfixe für den Spieler hinzu\n" +
                                     " §7-> §bremoveprefix §7- §9Entfernt verfügbare Präfixe für den Spieler");
                             return;
                         }
-                        switch (args[1]) {
+                        UUID id;
+                        Player player = Bukkit.getPlayer(args[1]);
+                        if(!player.isValid()) {
+                            p.sendMessage(Main.PRE + "§cDer Spieler §b" + args[1] + " §cwurde nicht gefunden §3(Offline Spieler werden nicht erfasst)");
+                            return;
+                        }
+                        id = player.getUniqueId();
+                        if(!mySQL.playerExists(id)) {
+                            p.sendMessage(Main.PRE + "§cDer Spieler ist nicht in der Datenbank erfasst");
+                            return;
+                        }
+                        switch (args[2]) {
                             case "setrank" -> {
                                 if (args.length != 4) {
-                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player setrank <§eplayer§6> <§erank§6>");
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player <§eplayer§6> setrank <§erank§6>");
                                     return;
                                 }
                                 if(!mySQL.exists("ranks", "name", args[3])) {
                                     p.sendMessage(Main.PRE + "§cRang §6" + args[3] + " §cexistiert nicht");
                                     return;
                                 }
-                                UUID id;
-                                Player player = Bukkit.getPlayer(args[2]);
-                                if(player == null) {
-                                    @Deprecated
-                                    OfflinePlayer offPlayer = Bukkit.getOfflinePlayer(args[2]);
-                                    if(offPlayer == null) {
-                                        p.sendMessage(Main.PRE + "§cDer Spieler §b" + args[2] + " §cwurde nicht gefunden");
-                                        return;
-                                    }
-                                    id = offPlayer.getUniqueId();
-                                }
-                                id = player.getUniqueId();
-                                if(!mySQL.playerExists(id)) {
-                                    p.sendMessage(Main.PRE + "§cDer Spieler ist nicht in der Datenbank erfasst");
-                                    return;
-                                }
-                                if (!mySQL.exists("ranks", "name", args[3])) {
-                                    p.sendMessage(Main.PRE + "§cRang §6" + args[3] + " §cexistiert nicht");
-                                    return;
-                                }
-                                if(mySQL.editPlayerRank(id, args[3])) {
-                                    p.sendMessage("§cRang des Spielers §b" + args[2] + " §awurde auf §6" + args[3] + " §agesetzt");
+                                if(mySQL.editPlayer(id, "rank", args[3])) {
+                                    p.sendMessage("§cRang des Spielers §b" + args[1] + " §awurde auf §6" + args[3] + " §agesetzt");
                                 } else
                                     error(p);
                             }
                             case "setprefix" -> {
-
+                                if (args.length != 4) {
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player <§eplayer§6> setprefix <§erank§6>");
+                                    return;
+                                }
+                                if(!mySQL.exists("prefixes", "name", args[3])) {
+                                    p.sendMessage(Main.PRE + "§cPräfix §6" + args[3] + " §cexistiert nicht");
+                                    return;
+                                }
+                                if(mySQL.editPlayer(id, "prefix", args[3])) {
+                                    p.sendMessage("§cPräfix des Spielers §b" + args[1] + " §awurde auf §6" + args[3] + " §agesetzt");
+                                }
+                                else {
+                                    error(p);
+                                }
                             }
                             case "addprefix" -> {
 

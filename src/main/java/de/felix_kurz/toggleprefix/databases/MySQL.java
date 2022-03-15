@@ -216,17 +216,17 @@ public class MySQL {
         }
     }
 
-    public boolean editPlayerRank(UUID id, String rank) {
+    public boolean editPlayer(UUID id, String col, String value) {
         try {
-            String sql = "UPDATE players SET rank=? WHERE id=?";
+            String sql = "UPDATE players SET " + col +"=? WHERE id=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
-            stmt.setString(1, rank);
+            stmt.setString(1, value);
             stmt.setBytes(2, UUIDtoByte(id));
 
             stmt.execute();
 
-            c.sendMessage(Main.PRE + "§aSet §3rank §aof Player with id §6" + id + " §ato §3" + rank);
+            c.sendMessage(Main.PRE + "§aSet §3" + col + " §aof Player with id §6" + id + " §ato §3" + value);
             return true;
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
