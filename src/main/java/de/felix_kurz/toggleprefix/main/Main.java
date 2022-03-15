@@ -5,6 +5,7 @@ import de.felix_kurz.toggleprefix.configuration.ConfigManager;
 import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.listeners.ChatListener;
 import de.felix_kurz.toggleprefix.listeners.JoinListener;
+import de.felix_kurz.toggleprefix.scoreboards.ScoreboardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,6 +21,9 @@ public class Main extends JavaPlugin {
 
         mysql = cfgM.loadDatabase();
         mysql.connect();
+
+        ScoreboardManager sbM = new ScoreboardManager(this);
+        sbM.animateTabs();
 
         getCommand("toggleprefix").setExecutor(new TogglePrefixCommand(this));
 

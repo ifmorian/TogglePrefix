@@ -5,13 +5,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public record JoinListener(Main plugin) implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        Player p = event.getPlayer();
-        plugin.getMysql().loadPlayer(p);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Player p = event.getPlayer();
+                plugin.getMysql().loadPlayer(p);
+            }
+        }.runTaskAsynchronously(plugin);
     }
 
 }

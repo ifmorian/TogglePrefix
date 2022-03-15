@@ -16,6 +16,9 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         String chatprefix = plugin.getMysql().getChatPrefix(event.getPlayer());
+        if(chatprefix == null) {
+            event.getPlayer().sendMessage(Main.PRE + "§cEtwas ist schiefgelaufen. Bitte versuche es erneut.");
+        }
         chatprefix = chatprefix.replace("%name%", event.getPlayer().getDisplayName());
         chatprefix = chatprefix.replace("&", "§");
         String msg = event.getMessage();

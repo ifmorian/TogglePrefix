@@ -4,10 +4,11 @@ import de.felix_kurz.toggleprefix.main.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class MySQL {
@@ -85,7 +86,7 @@ public class MySQL {
         }
         try {
             String sql = "INSERT IGNORE INTO prefixes(name,display,chat,tablist,item,priority) " +
-                    "VALUES('default','Player','&7Player - &f%name% &7>>','&7Player | &f%name%','GREEN_STAINED_GLASS_PANE','0')";
+                    "VALUES('default','Player','&7Player - &f%name% &7>>','&7Player | &f%name%','GREEN_STAINED_GLASS_PANE','100')";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.execute();
         } catch (SQLException e) {
@@ -93,7 +94,7 @@ public class MySQL {
         }
         try {
             String sql = "INSERT IGNORE INTO ranks(name,display,prefixes,priority) " +
-                    "VALUES('default','Player','default','0')";
+                    "VALUES('default','Player','default','100')";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.execute();
         } catch (SQLException e) {
@@ -268,34 +269,29 @@ public class MySQL {
     }
 
     public void loadPlayer(Player player) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    String sql = "SELECT id FROM players WHERE id=?";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
+        try {
+            String sql = "SELECT id FROM players WHERE id=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
 
-                    stmt.setBytes(1, UUIDtoByte(player.getUniqueId()));
+            stmt.setBytes(1, UUIDtoByte(player.getUniqueId()));
 
-                    if(stmt.executeQuery().next()) {
-                        return;
-                    }
-                } catch (SQLException e) {
-                    Bukkit.getLogger().warning(e.getMessage());
-                    return;
-                }
-                try {
-                    String sql = "INSERT INTO players(id,rank,prefix) VALUES(?,'default','default')";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
-
-                    stmt.setBytes(1, UUIDtoByte(player.getUniqueId()));
-
-                    stmt.execute();
-                } catch (SQLException e) {
-                    Bukkit.getLogger().warning(e.getMessage());
-                }
+            if(stmt.executeQuery().next()) {
+                return;
             }
-        }.runTaskAsynchronously(plugin);
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return;
+        }
+        try {
+            String sql = "INSERT INTO players(id,rank,prefix,prefixes) VALUES(?,'default','default','')";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setBytes(1, UUIDtoByte(player.getUniqueId()));
+
+            stmt.execute();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+        }
     }
 
     public byte[] UUIDtoByte(UUID id) {
@@ -315,6 +311,39 @@ public class MySQL {
             ResultSet rs = stmt.executeQuery();
             rs.next();
             return rs.getString("prefixes");
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return null;
+        }
+    }
+
+    public String getPlayerPrefixes(UUID id) {
+        try {
+            String sql = "SELECT prefixes FROM players WHERE id=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setBytes(1, UUIDtoByte(id));
+
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
+            return rs.getString("prefixes");
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return null;
+        }
+    }
+
+    public String[] getTeams() {
+        try {
+            String sql = "SELECT name,priority FROM prefixes";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            ResultSet rs = stmt.executeQuery();
+            List<String> teams = new ArrayList<>();
+            while (rs.next()) {
+                teams.add(rs.getString("priority") + rs.getString("name"));
+            }
+            return teams.toArray(new String[teams.size()]);
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             return null;
