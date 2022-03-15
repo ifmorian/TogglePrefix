@@ -20,7 +20,11 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
             return false;
         }
         if (args.length == 0) {
-            p.sendMessage(Main.PRE + "§9Benutze §6/toggleprefix help §9für mehr Informationen");
+            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix [§enew§6/§edelete§6/§eedit§6/§erank§6]\n" +
+                    " §7-> §bnew §7- §9Erstellt einen neuen Präfix\n" +
+                    " §7-> §bdelete §7- §9Entfertn einen Präfix\n" +
+                    " §7-> §bedit §7- §9Bearbeiten eines Präfixes\n" +
+                    " §7-> §brank §7- §9Ränge erstellen, entfernen oder bearbeiten");
             return false;
         }
         new BukkitRunnable() {
@@ -41,150 +45,149 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                     case "new":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
                         if (args.length < 5) {
-                            sender.sendMessage(Main.PRE + "§9Use §6/toggleprefix new <name> <prefix> <itemstack> <priority>\n" +
-                                    " §7-> §bname §7- §9The name of the prefix\n" +
-                                    " §7-> §bchat-prefix §7- §9Prefix for chat messages. Use §6%name% §9where the player's name will be inserted\n" +
-                                    " §7-> §bitemstack §7- §9Icon in the gui interface §3(use spigot itemstack names)\n" +
-                                    " §7-> §bpriority §7- §9Priority for tablist");
+                            sender.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix new <§ename§6> <§eprefix§6> <§eitemstack§6> <§epriority§6>\n" +
+                                    " §7-> §bname §7- §9Name des Präfixes\n" +
+                                    " §7-> §bchat-prefix §7- §9Präfix für Chat-Nachrichten. Benutze §6%name% §9für den Spielernamen\n" +
+                                    " §7-> §bitemstack §7- §9Icon des Präfixes im GUI §3(Bitte benutze die Bezeichnungen für Spigot Itemstacks)\n" +
+                                    " §7-> §bpriority §7- §9Die Priorität in der Tabliste");
                             return;
                         }
                         if (Material.getMaterial(args[args.length - 2]) == null) {
-                            p.sendMessage(Main.PRE + "§cEnter a valid itemstack\n" +
+                            p.sendMessage(Main.PRE + "§cBitte gib einen richtigen Itemstack ein\n" +
                                     "§3hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html");
                             return;
                         }
                         String chat = argsToString(args, 2, args.length - 3);
                         if (isNoValidPriority(args[args.length - 1], p)) return;
                         if (mySQL.exists("prefixes", "name", args[1])) {
-                            p.sendMessage(Main.PRE + "§cPrefix §6" + args[1] + " §calready exists");
+                            p.sendMessage(Main.PRE + "§cPräfix §6" + args[1] + " §cexistiert bereits");
                             return;
                         }
                         if (mySQL.addPrefix(args[1], chat, args[args.length - 2], args[args.length - 1])) {
-                            p.sendMessage(Main.PRE + "§aAdded prefix §6" + args[1]);
+                            p.sendMessage(Main.PRE + "§aPräfix §6" + args[1] + " §awurde hinzugefügt");
                         } else
                             error(p);
                         break;
                     case "delete":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
                         if (args.length != 2) {
-                            p.sendMessage(Main.PRE + "§9Use §6/toggleprefix delete <name>\n" +
-                                    " §7-> §bname §7- §9Name of the prefix");
+                            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix delete <§ename§6>\n" +
+                                    " §7-> §bname §7- §9Name des Präfixes");
                             return;
                         }
                         if (!mySQL.exists("prefixes", "name", args[1])) {
-                            p.sendMessage(Main.PRE + "§cPrefix §6" + args[1] + " §cdoes not exists");
+                            p.sendMessage(Main.PRE + "§cPräfix §6" + args[1] + " §cexistiert nicht");
                             return;
                         }
                         if (mySQL.delete("prefixes", "name", args[1])) {
-                            p.sendMessage(Main.PRE + "§aDeleted prefix §6" + args[1]);
+                            p.sendMessage(Main.PRE + "§aPräfix §6" + args[1] + " §awurde entfernt");
                         } else
                             error(p);
                         break;
                     case "edit":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
                         if (args.length < 4) {
-                            p.sendMessage(Main.PRE + "§9Use §6/toggleprefix edit <name> [name/display/chat/tablist/item/priority] <value>\n" +
+                            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix edit <§ename§6> [§ename§6/§edisplay§6/§echat§6/§etablist§6/§eitem§6/§epriority§6] <§evalue§6>\n" +
                                     " §7-> §bname §7- §9The name of the prefix\n");
                             return;
                         }
                         if (!(args[2].equals("name") || args[2].equals("display") || args[2].equals("chat") || args[2].equals("tablist") || args[2].equals("item") || args[2].equals("priority"))) {
-                            p.sendMessage(Main.PRE + "§cUse §6name§c, §6display§c, §6chat§c, §6tablist§c, §6item §cor §6priority §cas third argument");
+                            p.sendMessage(Main.PRE + "§cBitte benutze §6name§c, §6display§c, §6chat§c, §6tablist§c, §6item §coder §6priority §cals drittes Argument");
                             return;
                         }
                         String value = argsToString(args, 3, args.length - 1);
                         if (args[2].equals("item") && Material.getMaterial(value) == null) {
-                            p.sendMessage(Main.PRE + "§cEnter a valid itemstack\n" +
+                            p.sendMessage(Main.PRE + "§cBitte gib einen richtigen Itemstack ein\n" +
                                     "§3hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html");
                             return;
                         }
                         if(args[2].equals("priority")) if (isNoValidPriority(value, p)) return;
                         if(!mySQL.exists("prefixes", "name", args[1])) {
-                            p.sendMessage(Main.PRE + "§cPrefix §6" + args[1] + " §cdoes not exists");
+                            p.sendMessage(Main.PRE + "§cPräfix §6" + args[1] + " §cexistiert nicht");
                             return;
                         }
                         if(mySQL.edit("prefixes", "name", args[1], args[2], value)) {
-                            p.sendMessage(Main.PRE + "§aSet §3" + args[2] + " §aof prefix §6" + args[1] + " §ato §3" + value);
+                            p.sendMessage(Main.PRE + "§3" + args[2] + " §avon Präfix §6" + args[1] + " §awurde zu §3" + value + " §ageändert");
                         } else
                             error(p);
                         break;
                     case "rank":
                         if (PermissionManager.isNotPermit(p, "toggleprefix.edit", true)) return;
                         if (args.length < 2) {
-                            p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank [new/delete/addprefix/removeprefix/edit]\n" +
-                                    " §7-> §bnew §7- §9Erstellt einen neuen Rang" +
-                                    " §7-> §bdelete §7- §9Delete a rank" +
-                                    " §7-> §baddprefix §7- §9CAdd a prefix to a rank" +
-                                    " §7-> §bremoveprefix §7- §9Removes a prefix from a rank" +
-                                    " §7-> §bedit §7- §9Edit a rank");
+                            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank [§enew§6/§edelete§6/§eaddprefix§6/§eremoveprefix§6/§eedit§6]\n" +
+                                    " §7-> §bnew §7- §9Erstellt einen neuen Rang\n" +
+                                    " §7-> §bdelete §7- §9Entfertn einen Rang\n" +
+                                    " §7-> §baddprefix §7- §9CFügt Präfixe zu einem Rang hinzu\n" +
+                                    " §7-> §bremoveprefix §7- §9Entfernt Präfixe von einem Rang\n" +
+                                    " §7-> §bedit §7- §9Bearbeiten eines Rangs");
                             return;
                         }
-                        switch(args[1]) {
-                            case "new":
-                                if(args.length != 5) {
-                                    p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank new <name> <prefix1,prefix2,...> <priority>");
+                        switch (args[1]) {
+                            case "new" -> {
+                                if (args.length != 5) {
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank new <§ename§6> <§eprefix1§6,§eprefix2§6,§e...§6> <§epriority§6>");
                                     return;
                                 }
                                 if (isNoValidPriority(args[4], p)) return;
                                 if (mySQL.exists("ranks", "name", args[2])) {
-                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §calready exists");
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[2] + " §cexistiert bereits");
                                     return;
                                 }
                                 String notExistentPrefix = prefixNotExists(args[3]);
-                                if(notExistentPrefix != null) {
-                                    p.sendMessage(Main.PRE + "§cPrefix §6" + notExistentPrefix + " §cdoes not exists");
+                                if (notExistentPrefix != null) {
+                                    p.sendMessage(Main.PRE + "§cPräfix §6" + notExistentPrefix + " §cexistiert nicht");
                                     return;
                                 }
-                                if(mySQL.addRank(args[2], args[3], args[4])) {
-                                    p.sendMessage(Main.PRE + "§aAdded rank §6" + args[2]);
+                                if (mySQL.addRank(args[2], args[3], args[4])) {
+                                    p.sendMessage(Main.PRE + "§aRang§6" + args[2] + " §ahinzugefügt");
                                 } else
                                     error(p);
-                                break;
-                            case "delete":
+                            }
+                            case "delete" -> {
                                 if (args.length != 3) {
-                                    p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank delete <name>");
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank delete <§ename§6>");
                                     return;
                                 }
                                 if (!mySQL.exists("ranks", "name", args[2])) {
-                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[2] + " §cexistiert nicht");
                                     return;
                                 }
                                 if (mySQL.delete("ranks", "name", args[2])) {
-                                    p.sendMessage(Main.PRE + "§aDeleted rank §6" + args[2]);
+                                    p.sendMessage(Main.PRE + "§aRang §6" + args[2] + " §aentfernt");
                                 } else
                                     error(p);
-                                break;
-                            case "addprefix":
+                            }
+                            case "addprefix" -> {
                                 if (args.length != 4) {
-                                    p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank addprefix <rank> <prefix1,prefix2,...>");
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank addprefix <§erank§6> <§eprefix1§6,§eprefix2§6,§e...§6>");
                                     return;
                                 }
                                 if (!mySQL.exists("ranks", "name", args[2])) {
-                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[2] + " §cexistiert nicht");
                                     return;
                                 }
-
                                 String notExistentPrefix1 = prefixNotExists(args[3]);
                                 if (notExistentPrefix1 != null) {
-                                    p.sendMessage(Main.PRE + "§cPrefix §6" + notExistentPrefix1 + " §cdoes not exists");
+                                    p.sendMessage(Main.PRE + "§cPräfix §6" + notExistentPrefix1 + " §cexistiert nicht");
                                     return;
                                 }
                                 String prefixes = joinPrefixes(args[3], mySQL.getRankPrefixes(args[2]));
                                 if (mySQL.edit("ranks", "name", args[2], "prefixes", prefixes)) {
-                                    p.sendMessage(Main.PRE + "§aAdded prefixes §3" + args[3] + " §ato rank §6" + args[2] + "\n" +
+                                    p.sendMessage(Main.PRE + "§aPräfix(e) §3" + args[3] + " §azu Rang §6" + args[2] + " §ahinzugefügt\n" +
                                             "§3(" + prefixes + ")");
                                 } else
                                     error(p);
-                                break;
-                            case "removeprefix":
+                            }
+                            case "removeprefix" -> {
                                 if (args.length != 4) {
-                                    p.sendMessage(Main.PRE + "§9Use §6/toggleprefix rank removeprefix <rank> <prefix1,prefix2,...>");
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank removeprefix <§erank§6> <§eprefix1§6,§eprefix2§6,§e...§6>");
                                     return;
                                 }
                                 if (!mySQL.exists("ranks", "name", args[2])) {
-                                    p.sendMessage(Main.PRE + "§cRank §6" + args[2] + " §cdoes not exists");
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[2] + " §cexistiert nicht");
                                     return;
                                 }
-                                String[] prefixes1 =  mySQL.getRankPrefixes(args[2]).split(",");
+                                String[] prefixes1 = mySQL.getRankPrefixes(args[2]).split(",");
                                 for (int i = 0; i < prefixes1.length; i++) {
                                     for (String s : args[3].split(",")) {
                                         if (prefixes1[i].equals(s)) {
@@ -201,15 +204,96 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                                 }
                                 prefixesR.delete(0, 1);
                                 if (mySQL.edit("ranks", "name", args[2], "prefixes", prefixesR.toString())) {
-                                p.sendMessage(Main.PRE + "§aPräfix(e) §3" + args[3] + " §avon Rang §6" + args[2] + " §aentfernt\n" +
-                                        "§3(" + prefixesR + ")");
+                                    p.sendMessage(Main.PRE + "§aPräfix(e) §3" + args[3] + " §avon Rang §6" + args[2] + " §aentfernt\n" +
+                                            "§3(" + prefixesR + ")");
                                 } else
                                     error(p);
-                                break;
-                            case "edit":
-                                break;
+                            }
+                            case "edit" -> {
+                                if (args.length < 5) {
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank edit <§ename§6> [§ename§6/§edisplay§6/§epriority§6] <§evalue§6>\n" +
+                                            " §7-> §bname §7- §9Der Name des Rangs\n");
+                                    return;
+                                }
+                                if (!(args[3].equals("name") || args[3].equals("display") || args[3].equals("priority"))) {
+                                    p.sendMessage(Main.PRE + "§cBitte benutze §6name§c, §6display §coder §6priority §cals viertes Argument");
+                                    return;
+                                }
+                                if (!mySQL.exists("ranks", "name", args[2])) {
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[2] + " §cexistiert nicht");
+                                    return;
+                                }
+                                if (args[3].equals("name")) {
+                                    if(args.length != 5) {
+                                        p.sendMessage(Main.PRE + "§cDer Name des Rangs darf keine Leerzeichen enthalten");
+                                        return;
+                                    }
+                                    if(mySQL.exists("ranks", "name", args[4])) {
+                                        p.sendMessage(Main.PRE + "§cRang §6" + args[4] + " §cexistiert bereits");
+                                        return;
+                                    }
+                                }
+
+                                String v = argsToString(args, 4, args.length - 1);
+                                if (args[3].equals("priority")) if (isNoValidPriority(v, p)) return;
+                                if(mySQL.edit("ranks", "name", args[2], args[3], v)) {
+                                    p.sendMessage(Main.PRE + "§3" + args[3] + " §avon Rang §6" + args[2] + " §awurde zu §3" + v + " §ageändert");
+                                } else
+                                    error(p);
+                            }
+                            default -> p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix rank [§enew§6/§edelete§6/§eaddprefix§6/§eremoveprefix§6/§eedit§6]\n" +
+                                    " §7-> §bnew §7- §9Erstellt einen neuen Rang\n" +
+                                    " §7-> §bdelete §7- §9Entfertn einen Rang\n" +
+                                    " §7-> §baddprefix §7- §9CFügt Präfixe zu einem Rang hinzu\n" +
+                                    " §7-> §bremoveprefix §7- §9Entfernt Präfixe von einem Rang\n" +
+                                    " §7-> §bedit §7- §9Bearbeiten eines Rangs");
                         }
                         break;
+                    case "player":
+                        if (PermissionManager.isNotPermit(p, "toggleprefix.admin", true)) return;
+                        if (args.length < 2) {
+                            p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player [§esetrank§6/§esetprefix§6/§eaddprefix§6/§eremoveprefix§6]\n" +
+                                    " §7-> §bsetrank §7- §9Setzt den Rang eines Spielers\n" +
+                                    " §7-> §bsetprefix §7- §9Setzt den Präfix eines Spielers\n" +
+                                    " §7-> §baddprefix §7- §9Fügt verfügbare Präfixe für den Spieler hinzu\n" +
+                                    " §7-> §bremoveprefix §7- §9Entfernt verfügbare Präfixe für den Spieler");
+                            return;
+                        }
+                        switch (args[1]) {
+                            case "setrank" -> {
+                                if (args.length != 4) {
+                                    p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player setrank <§eplayer§6> <§erank§6>");
+                                    return;
+                                }
+                                if(!mySQL.exists("ranks", "name", args[3])) {
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[3] + " §cexistiert nicht");
+                                    return;
+                                }
+                            }
+                            case "setprefix" -> {
+
+                            }
+                            case "addprefix" -> {
+
+                            }
+                            case "removeprefix" -> {
+
+                            }
+                            default -> {
+                                p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix player [§esetrank§6/§esetprefix§6/§eaddprefix§6/§eremoveprefix§6]\n" +
+                                        " §7-> §bsetrank §7- §9Setzt den Rang eines Spielers\n" +
+                                        " §7-> §bsetprefix §7- §9Setzt den Präfix eines Spielers\n" +
+                                        " §7-> §baddprefix §7- §9Fügt verfügbare Präfixe für den Spieler hinzu\n" +
+                                        " §7-> §bremoveprefix §7- §9Entfernt verfügbare Präfixe für den Spieler");
+                            }
+                        }
+                        break;
+                    default:
+                        p.sendMessage(Main.PRE + "§9Bitte benutze §6/toggleprefix [§enew§6/§edelete§6/§eedit§6/§erank§6]\n" +
+                                " §7-> §bnew §7- §9Erstellt einen neuen Präfix\n" +
+                                " §7-> §bdelete §7- §9Entfertn einen Präfix\n" +
+                                " §7-> §bedit §7- §9Bearbeiten eines Präfixes\n" +
+                                " §7-> §brank §7- §9Ränge erstellen, entfernen oder bearbeiten");
                 }
             }
         }.runTaskAsynchronously(plugin);
