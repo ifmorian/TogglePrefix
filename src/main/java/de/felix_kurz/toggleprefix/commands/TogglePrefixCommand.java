@@ -5,11 +5,14 @@ import de.felix_kurz.toggleprefix.main.Main;
 import de.felix_kurz.toggleprefix.permissions.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.UUID;
 
 public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
 
@@ -269,6 +272,30 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
                                     p.sendMessage(Main.PRE + "§cRang §6" + args[3] + " §cexistiert nicht");
                                     return;
                                 }
+                                UUID id;
+                                Player player = Bukkit.getPlayer(args[2]);
+                                if(player == null) {
+                                    @Deprecated
+                                    OfflinePlayer offPlayer = Bukkit.getOfflinePlayer(args[2]);
+                                    if(offPlayer == null) {
+                                        p.sendMessage(Main.PRE + "§cDer Spieler §b" + args[2] + " §cwurde nicht gefunden");
+                                        return;
+                                    }
+                                    id = offPlayer.getUniqueId();
+                                }
+                                id = player.getUniqueId();
+                                if(!mySQL.playerExists(id)) {
+                                    p.sendMessage(Main.PRE + "§cDer Spieler ist nicht in der Datenbank erfasst");
+                                    return;
+                                }
+                                if (!mySQL.exists("ranks", "name", args[3])) {
+                                    p.sendMessage(Main.PRE + "§cRang §6" + args[3] + " §cexistiert nicht");
+                                    return;
+                                }
+                                if(mySQL.editPlayerRank(id, args[3])) {
+                                    p.sendMessage("§cRang des Spielers §b" + args[2] + " §awurde auf §6" + args[3] + " §agesetzt");
+                                } else
+                                    error(p);
                             }
                             case "setprefix" -> {
 
@@ -324,7 +351,7 @@ public record TogglePrefixCommand(Main plugin) implements CommandExecutor {
     }
 
     public void error(Player p) {
-        p.sendMessage(Main.PRE + "§cSomething went wrong");
+        p.sendMessage(Main.PRE + "§cEtwas ist schiefgelaufen");
     }
 
     public String prefixNotExists(String prefixes) {

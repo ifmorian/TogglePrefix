@@ -126,6 +126,20 @@ public class MySQL {
         return false;
     }
 
+    public boolean playerExists(UUID id) {
+        try {
+            String sql = "SELECT id FROM players WHERE id=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setBytes(1, UUIDtoByte(id));
+
+            return stmt.executeQuery().next();
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+        }
+        return false;
+    }
+
     public boolean addPrefix(String name, String chat, String item, String priority) {
         try {
             String sql = "INSERT INTO prefixes(name,display,chat,tablist,item,priority) VALUES(?,?,?,?,?,?)";
@@ -195,6 +209,24 @@ public class MySQL {
             stmt.execute();
 
             c.sendMessage(Main.PRE + "§aSet §3" + col + " §aof §6" + keyValue + " §ato §3" + value + " §ain table §b" + table);
+            return true;
+        } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean editPlayerRank(UUID id, String rank) {
+        try {
+            String sql = "UPDATE players SET rank=? WHERE id=?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, rank);
+            stmt.setBytes(2, UUIDtoByte(id));
+
+            stmt.execute();
+
+            c.sendMessage(Main.PRE + "§aSet §3rank §aof Player with id §6" + id + " §ato §3" + rank);
             return true;
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
