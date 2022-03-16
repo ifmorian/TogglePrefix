@@ -7,6 +7,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ScoreboardManager {
 
@@ -15,13 +16,13 @@ public class ScoreboardManager {
     private String[] teams;
     private Scoreboard sb;
 
-    public ScoreboardManager(Main plugin) {
+    public ScoreboardManager(Main plugin, Scoreboard sb) {
         this.plugin = plugin;
+        this.sb = sb;
     }
 
     public void update() {
         teams = plugin.getMysql().getTeams();
-        sb = Bukkit.getScoreboardManager().getNewScoreboard();
         for (Team team : sb.getTeams()) {
             team.unregister();
         }
@@ -30,7 +31,11 @@ public class ScoreboardManager {
         }
     }
 
-    public void updatePlayer(Player p) {
+    public void updatePlayer(UUID id) {
+        Player p = Bukkit.getPlayer(id);
+        for (String t : teams) {
+            p.sendMessage(t);
+        }
         p.getScoreboard().getTeam(plugin.getMysql().getTeam(p)).addEntry(p.getName());
     }
 

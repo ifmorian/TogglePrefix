@@ -14,6 +14,7 @@ public class Main extends JavaPlugin {
     public static final String PRE = "§7[§dTogglePrefix§7] ";
     private MySQL mysql;
     private ConfigManager cfgM;
+    private ScoreboardManager sbM;
 
     public void onEnable() {
         cfgM = new ConfigManager(this);
@@ -22,7 +23,7 @@ public class Main extends JavaPlugin {
         mysql = cfgM.loadDatabase();
         mysql.connect();
 
-        ScoreboardManager sbM = new ScoreboardManager(this);
+        sbM = new ScoreboardManager(this, Bukkit.getScoreboardManager().getMainScoreboard());
         sbM.update();
         sbM.animateTabs();
 
@@ -42,5 +43,9 @@ public class Main extends JavaPlugin {
 
     public MySQL getMysql() {
         return mysql;
+    }
+
+    public ScoreboardManager getSbM() {
+        return sbM;
     }
 }

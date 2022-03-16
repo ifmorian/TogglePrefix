@@ -228,6 +228,9 @@ public class MySQL {
             stmt.execute();
 
             c.sendMessage(Main.PRE + "§aSet §3" + col + " §aof Player with id §6" + id + " §ato §3" + value);
+            if(col.equals("prefix")) {
+                plugin.getSbM().updatePlayer(id);
+            }
             return true;
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
