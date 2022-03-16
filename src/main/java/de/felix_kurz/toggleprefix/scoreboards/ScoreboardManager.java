@@ -3,15 +3,17 @@ package de.felix_kurz.toggleprefix.scoreboards;
 import de.felix_kurz.toggleprefix.main.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ScoreboardManager {
 
     private Main plugin;
 
     private String[] teams;
+    private Scoreboard sb;
 
     public ScoreboardManager(Main plugin) {
         this.plugin = plugin;
@@ -19,10 +21,17 @@ public class ScoreboardManager {
 
     public void update() {
         teams = plugin.getMysql().getTeams();
+        sb = Bukkit.getScoreboardManager().getNewScoreboard();
+        for (Team team : sb.getTeams()) {
+            team.unregister();
+        }
+        for (String t : teams) {
+            sb.registerNewTeam(t);
+        }
     }
 
     public void updatePlayer(Player p) {
-
+        p.getScoreboard().getTeam(plugin.getMysql().getTeam(p)).addEntry(p.getName());
     }
 
     public void animateTabs() {

@@ -23,6 +23,7 @@ public class Main extends JavaPlugin {
         mysql.connect();
 
         ScoreboardManager sbM = new ScoreboardManager(this);
+        sbM.update();
         sbM.animateTabs();
 
         getCommand("toggleprefix").setExecutor(new TogglePrefixCommand(this));

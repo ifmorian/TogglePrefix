@@ -268,19 +268,20 @@ public class MySQL {
         return null;
     }
 
-    public void loadPlayer(Player player) {
+    public String loadPlayer(Player player) {
         try {
-            String sql = "SELECT id FROM players WHERE id=?";
+            String sql = "SELECT prefix FROM players WHERE id=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             stmt.setBytes(1, UUIDtoByte(player.getUniqueId()));
 
-            if(stmt.executeQuery().next()) {
-                return;
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()) {
+                return rs.getString("prefix");
             }
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
-            return;
+            return null;
         }
         try {
             String sql = "INSERT INTO players(id,rank,prefix,prefixes) VALUES(?,'default','default','')";
@@ -289,8 +290,10 @@ public class MySQL {
             stmt.setBytes(1, UUIDtoByte(player.getUniqueId()));
 
             stmt.execute();
+            return "default";
         } catch (SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
+            return null;
         }
     }
 
@@ -345,6 +348,24 @@ public class MySQL {
             }
             return teams.toArray(new String[teams.size()]);
         } catch (SQLException e) {
+            Bukkit.getLogger().warning(e.getMessage());
+            return null;
+        }
+    }
+
+    public String getTeam(Player p) {
+        try {
+            String sql = "SELECT name,priority FROM prefixes WHERE name=?";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, getPlayerPrefix(p));
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()) {
+                return rs.getString("priority") + rs.getString("name");
+            }
+            return null;
+        } catch(SQLException e) {
             Bukkit.getLogger().warning(e.getMessage());
             return null;
         }

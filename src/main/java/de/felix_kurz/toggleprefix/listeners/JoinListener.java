@@ -15,7 +15,7 @@ public record JoinListener(Main plugin) implements Listener {
             @Override
             public void run() {
                 Player p = event.getPlayer();
-                plugin.getMysql().loadPlayer(p);
+                String prefix = plugin.getMysql().loadPlayer(p);
             }
         }.runTaskAsynchronously(plugin);
     }
