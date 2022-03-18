@@ -12,8 +12,8 @@ public class SkullItem extends InventoryItem {
 
     private String ownerName;
 
-    public SkullItem(String ownerName, String title, Material type, boolean enchanted) {
-        super(title, type, enchanted);
+    public SkullItem(String ownerName, String title, boolean enchanted) {
+        super(title, Material.PLAYER_HEAD, enchanted);
         this.ownerName = ownerName;
     }
 

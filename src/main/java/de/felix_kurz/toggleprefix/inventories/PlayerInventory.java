@@ -1,23 +1,16 @@
 package de.felix_kurz.toggleprefix.inventories;
 
 import de.felix_kurz.toggleprefix.databases.MySQL;
+import de.felix_kurz.toggleprefix.items.InventoryItem;
 import de.felix_kurz.toggleprefix.main.Main;
-import de.felix_kurz.toggleprefix.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlayerInventory {
+public abstract class PlayerInventory {
 
     public Main plugin;
     public MySQL mySQL;
@@ -27,6 +20,8 @@ public class PlayerInventory {
     public String title;
     public int size;
 
+    public InventoryItem[] items;
+
     public static Map<UUID, SetprefixInventory> openInventories = new HashMap<>();
 
     public PlayerInventory(Main plugin, Player p, String title, int size) {
@@ -35,31 +30,16 @@ public class PlayerInventory {
         this.title = title;
         this.size = size;
         mySQL = plugin.getMysql();
+        this.items =  new InventoryItem[size];
     }
 
-    public PlayerInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
+    public abstract void setupItems();
 
-    public ItemStack getPlayerHead(String name, String title, boolean enchanted) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
-        meta.setOwningPlayer(Bukkit.getOfflinePlayer(name));
-        meta.setDisplayName(Utils.colorTranslate(title));
-        if(enchanted) meta.addEnchant(Enchantment.LURE, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    public ItemStack getTitledItem(Material material, String title, boolean enchanted) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(Utils.colorTranslate(title));
-        if(enchanted) meta.addEnchant(Enchantment.LURE, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
-        item.setItemMeta(meta);
-        return item;
+    public void renderPage() {
+        for (int i = 0; i < size; i++) {
+            if(items[i] != null) inventory.setItem(i, items[i].getItem());
+            else inventory.clear(i);
+        }
     }
 
 }

@@ -1,9 +1,11 @@
 package de.felix_kurz.toggleprefix.databases;
 
+import de.felix_kurz.toggleprefix.items.PrefixItem;
 import de.felix_kurz.toggleprefix.utils.Prefix;
 import de.felix_kurz.toggleprefix.main.Main;
 import de.felix_kurz.toggleprefix.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
@@ -329,7 +331,7 @@ public class MySQL {
         return null;
     }
 
-    public Prefix getPrefix(String name) {
+    public PrefixItem getPrefix(String name) {
         try {
             String sql = "SELECT display,item,priority FROM prefixes WHERE name=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -338,7 +340,7 @@ public class MySQL {
 
             ResultSet rs = stmt.executeQuery();
             rs.next();
-            return new Prefix(name, rs.getString("display"), rs.getString("item"), rs.getString("priority"));
+            return new PrefixItem(name, Integer.parseInt(rs.getString("priority")), rs.getString("display"), Material.getMaterial(rs.getString("item")), false);
         } catch(Exception e) {
             Bukkit.getLogger().warning(e.getMessage());
         }

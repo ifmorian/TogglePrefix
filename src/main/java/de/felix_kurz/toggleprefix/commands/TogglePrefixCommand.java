@@ -29,7 +29,7 @@ public class TogglePrefixCommand implements CommandExecutor {
         }
         if (args.length == 0) {
             SetprefixInventory inv = new SetprefixInventory(plugin, p);
-            inv.setup();
+            inv.open();
             return false;
         }
         new BukkitRunnable() {

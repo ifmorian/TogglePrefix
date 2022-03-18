@@ -1,6 +1,8 @@
 package de.felix_kurz.toggleprefix.inventories;
 
-import de.felix_kurz.toggleprefix.utils.Prefix;
+import de.felix_kurz.toggleprefix.items.InventoryItem;
+import de.felix_kurz.toggleprefix.items.PrefixItem;
+import de.felix_kurz.toggleprefix.items.SkullItem;
 import de.felix_kurz.toggleprefix.main.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -8,15 +10,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Map;
-import java.util.UUID;
-
 public class SetprefixInventory extends PlayerInventory {
 
     public static final String TITLE = "§dPräfix ändern";
     private String[] prefixes = new String[0];
     public int page;
-    private Prefix prefix;
+    private PrefixItem prefix;
 
     public SetprefixInventory(Main plugin, Player p) {
         super(plugin, p,"§dPräfix ändern", 5 * 9);
@@ -28,52 +27,58 @@ public class SetprefixInventory extends PlayerInventory {
         openInventories.put(p.getUniqueId(), this);
     }
 
-    public void setup() {
-        ItemStack glass = getTitledItem(Material.GLASS_PANE, TITLE, true);
+    @Override
+    public void setupItems() {
+        InventoryItem glassPane = new InventoryItem(page + "", Material.GLASS_PANE, true);
         for (int i = 0; i < 9; i++) {
-            inventory.setItem(i, glass);
-            inventory.setItem(i + 36, glass);
+            items[i] = glassPane;
+            items[i + 36] = glassPane;
         }
         for (int i = 1; i < 4; i++) {
-            inventory.setItem(i * 9, glass);
-            inventory.setItem(i * 9 + 8, glass);
+            items[i * 9] = glassPane;
+            items[i * 9 + 8] = glassPane;
         }
-        inventory.setItem(38, new ItemStack(Material.ARROW));
-        inventory.setItem(42, new ItemStack(Material.ARROW));
-
-        p.openInventory(inventory);
         new BukkitRunnable() {
             @Override
             public void run() {
-                prefix = plugin.getMysql().getPrefix(mySQL.getFromPlayer(p, "prefix"));
-                inventory.setItem(4, getTitledItem(prefix.item, prefix.display, false));
-                inventory.setItem(38, getPlayerHead("MHF_ArrowLeft", "Nächste Seite", false));
-                inventory.setItem(42, getPlayerHead("MHF_ArrowRight", "Vorherige Seite", false));
+                items[4] = plugin.getMysql().getPrefix(mySQL.getFromPlayer(p, "prefix"));
+                items[38] = new SkullItem("MHF_ArrowLeft", "§a§oVorherige Seite", false);
+                items[42] = new SkullItem("MHF_ArrowRight", "§a§oNächste Seite", false);
+            }
+        }.runTaskAsynchronously(plugin);
+        setupPage();
+    }
+
+    public void setupPage() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int a = page * 21;
+                for (int i = 1; i < 4; i++) {
+                    for (int j = i * 9 + 1; j < i * 9 + 8; j++) {
+                        if (prefixes.length > a) {
+                            items[j] = plugin.getMysql().getPrefix(prefixes[a]);
+                            a++;
+                        } else
+                            items[j] = null;
+                    }
+                }
                 renderPage();
             }
         }.runTaskAsynchronously(plugin);
     }
 
-    public void renderPage() {
-        int a = page * 21;
-        for (int i = 1; i < 4; i++) {
-            for (int j = i * 9 + 1; j < i * 9 + 8; j++) {
-                if (prefixes.length <= a) {
-                    inventory.clear(j);
-                } else {
-                    Prefix prefix = plugin.getMysql().getPrefix(prefixes[a]);
-                    inventory.setItem(j, getTitledItem(prefix.item, prefix.display, prefix.name.equals(this.prefix.name)));
-                    a++;
-                }
-            }
-        }
+    public void open() {
+        setupItems();
+        p.openInventory(inventory);
     }
 
     public void setPage(int page) {
         if(prefixes.length > 21 * page && page >= 0) {
             this.page = page;
+            setupItems();
+            setupPage();
             renderPage();
         }
     }
-
 }
