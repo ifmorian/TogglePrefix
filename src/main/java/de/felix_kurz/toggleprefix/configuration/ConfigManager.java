@@ -77,4 +77,8 @@ public class ConfigManager {
     public void save() {
         plugin.saveConfig();
     }
+
+    public boolean autoUpdate() {
+        return cfg.getBoolean("autoUpdate");
+    }
 }

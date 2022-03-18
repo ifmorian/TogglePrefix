@@ -16,7 +16,7 @@ public record JoinListener(Main plugin) implements Listener {
             public void run() {
                 Player p = event.getPlayer();
                 plugin.getMysql().loadPlayer(p);
-                plugin.getSbM().updatePlayer(p.getUniqueId());
+                plugin.getSbM().updatePlayer(p);
             }
         }.runTaskAsynchronously(plugin);
     }

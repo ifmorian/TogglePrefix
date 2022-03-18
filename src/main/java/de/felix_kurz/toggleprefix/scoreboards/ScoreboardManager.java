@@ -1,28 +1,31 @@
 package de.felix_kurz.toggleprefix.scoreboards;
 
+import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.main.Main;
+import de.felix_kurz.toggleprefix.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.util.List;
-import java.util.UUID;
 
 public class ScoreboardManager {
 
-    private Main plugin;
+    private final Main plugin;
+    private final MySQL mySQL;
 
-    private String[] teams;
-    private Scoreboard sb;
+    private final Scoreboard sb;
 
     public ScoreboardManager(Main plugin, Scoreboard sb) {
         this.plugin = plugin;
         this.sb = sb;
+        mySQL = plugin.getMysql();
     }
 
     public void update() {
-        teams = plugin.getMysql().getTeams();
+        String[] teams = plugin.getMysql().getTeams();
+        if(teams == null) return;
         for (Team team : sb.getTeams()) {
             team.unregister();
         }
@@ -31,12 +34,18 @@ public class ScoreboardManager {
         }
     }
 
-    public void updatePlayer(UUID id) {
-        Player p = Bukkit.getPlayer(id);
-        for (String t : teams) {
-            p.sendMessage(t);
+    public void updatePlayer(Player p) {
+        p.getScoreboard().getTeam(Utils.convertToLetters(mySQL.getTeam(p))).addEntry(p.getName());
+        String prefix = mySQL.getFromPlayer(p, "prefix");
+        p.setPlayerListName(mySQL.getFrom("prefixes", "name", prefix, "tablist").replace("&", "§").replace("%name%", p.getName()));
+    }
+
+    public void updatePlayers() {
+        if (plugin.getCfgM().autoUpdate()) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                updatePlayer(p);
+            }
         }
-        p.getScoreboard().getTeam(plugin.getMysql().getTeam(p)).addEntry(p.getName());
     }
 
     public void animateTabs() {

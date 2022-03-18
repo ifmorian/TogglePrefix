@@ -4,6 +4,7 @@ import de.felix_kurz.toggleprefix.commands.TogglePrefixCommand;
 import de.felix_kurz.toggleprefix.configuration.ConfigManager;
 import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.listeners.ChatListener;
+import de.felix_kurz.toggleprefix.listeners.InventoryClickListener;
 import de.felix_kurz.toggleprefix.listeners.JoinListener;
 import de.felix_kurz.toggleprefix.scoreboards.ScoreboardManager;
 import org.bukkit.Bukkit;
@@ -31,6 +32,7 @@ public class Main extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new JoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ChatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), this);
     }
 
     public void onDisable() {
