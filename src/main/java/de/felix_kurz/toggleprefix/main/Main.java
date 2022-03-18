@@ -32,7 +32,7 @@ public class Main extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new JoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ChatListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(this), this);
     }
 
     public void onDisable() {
