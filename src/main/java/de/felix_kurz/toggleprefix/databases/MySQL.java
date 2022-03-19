@@ -323,7 +323,7 @@ public class MySQL {
 
             ResultSet rs = stmt.executeQuery();
             if(rs.next()) {
-                return rs.getString("priority") + rs.getString("name");
+                return Utils.convertToLetters(rs.getString("priority") + rs.getString("name"));
             }
         } catch(Exception e) {
             Bukkit.getLogger().warning(e.getMessage());
@@ -333,14 +333,14 @@ public class MySQL {
 
     public PrefixItem getPrefix(String name) {
         try {
-            String sql = "SELECT display,item,priority FROM prefixes WHERE name=?";
+            String sql = "SELECT display,item FROM prefixes WHERE name=?";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, name);
 
             ResultSet rs = stmt.executeQuery();
             rs.next();
-            return new PrefixItem(name, Integer.parseInt(rs.getString("priority")), rs.getString("display"), Material.getMaterial(rs.getString("item")), false);
+            return new PrefixItem(name, rs.getString("display"), Material.getMaterial(rs.getString("item")), false, plugin);
         } catch(Exception e) {
             Bukkit.getLogger().warning(e.getMessage());
         }

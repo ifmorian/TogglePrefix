@@ -3,6 +3,7 @@ package de.felix_kurz.toggleprefix.commands;
 import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.inventories.SetprefixInventory;
 import de.felix_kurz.toggleprefix.main.Main;
+import de.felix_kurz.toggleprefix.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -114,6 +115,7 @@ public class TogglePrefixCommand implements CommandExecutor {
                 }
                 if (mySQL.addPrefix(args[2], chat, args[args.length - 2], args[args.length - 1])) {
                     p.sendMessage(Main.PRE + "§aPräfix §6" + args[2] + " §awurde hinzugefügt");
+                    plugin.getSbM().update();
                 } else
                     error(p);
             }
@@ -129,6 +131,7 @@ public class TogglePrefixCommand implements CommandExecutor {
                 }
                 if (mySQL.delete("prefixes", "name", args[2])) {
                     p.sendMessage(Main.PRE + "§aPräfix §6" + args[2] + " §awurde entfernt");
+                    plugin.getSbM().update();
                 } else
                     error(p);
             }
@@ -155,6 +158,7 @@ public class TogglePrefixCommand implements CommandExecutor {
                 }
                 if(mySQL.edit("prefixes", "name", args[2], args[3], value)) {
                     p.sendMessage(Main.PRE + "§3" + args[3] + " §avon Präfix §6" + args[2] + " §awurde zu §3" + value + " §ageändert");
+                    plugin.getSbM().update();
                 } else
                     error(p);
             }
@@ -253,7 +257,7 @@ public class TogglePrefixCommand implements CommandExecutor {
                     error(p);
                     return;
                 }
-                String prefixes = joinPrefixes(args[3], oldPrefixes);
+                String prefixes = Utils.joinPrefixes(args[3], oldPrefixes);
                 if (mySQL.edit("ranks", "name", args[2], "prefixes", prefixes)) {
                     p.sendMessage(Main.PRE + "§aPräfix(e) §3" + args[3] + " §azu Rang §6" + args[2] + " §ahinzugefügt\n" +
                             "§3(" + prefixes + ")");
@@ -351,7 +355,7 @@ public class TogglePrefixCommand implements CommandExecutor {
                     error(p);
                     return;
                 }
-                String prefixes = joinPrefixes(args[3], oldPrefixes);
+                String prefixes = Utils.joinPrefixes(args[3], oldPrefixes);
                 if (mySQL.editPlayer(player, "prefixes", prefixes)) {
                     p.sendMessage(Main.PRE + "§aPräfix(e) §3" + args[3] + " §azu Spieler*in §6" + args[1] + " §ahinzugefügt\n" +
                             "§3(" + prefixes + ")");
@@ -434,21 +438,6 @@ public class TogglePrefixCommand implements CommandExecutor {
             }
         }
         return null;
-    }
-
-    public String joinPrefixes(String newPrefixes, String oldPrefixes) {
-        StringBuilder prefixes = new StringBuilder(oldPrefixes);
-        String[] oldPrefixesArray = oldPrefixes.split(",");
-        String[] newPrefixesArray = newPrefixes.split(",");
-        mainloop: for (String newPrefix : newPrefixesArray) {
-            for (String oldPrefix : oldPrefixesArray) {
-                if (newPrefix.equals(oldPrefix)) {
-                    continue mainloop;
-                }
-            }
-            prefixes.append(",").append(newPrefix);
-        }
-        return prefixes.toString();
     }
 
     public boolean isNotPermit(Player sender, String permission, boolean msg) {

@@ -2,7 +2,9 @@ package de.felix_kurz.toggleprefix.listeners;
 
 import de.felix_kurz.toggleprefix.inventories.PlayerInventory;
 import de.felix_kurz.toggleprefix.inventories.SetprefixInventory;
+import de.felix_kurz.toggleprefix.items.PrefixItem;
 import de.felix_kurz.toggleprefix.main.Main;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -17,7 +19,8 @@ public record InventoryClickListener(Main plugin) implements Listener {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    SetprefixInventory inventory = PlayerInventory.openInventories.get(event.getWhoClicked().getUniqueId());
+                    Player p = (Player) event.getWhoClicked();
+                    SetprefixInventory inventory = PlayerInventory.openInventories.get(p.getUniqueId());
                     if (event.getSlot() == 38) {
                         inventory.setPage(inventory.page - 1);
                         return;
@@ -25,6 +28,10 @@ public record InventoryClickListener(Main plugin) implements Listener {
                         inventory.setPage(inventory.page + 1);
                         return;
                     }
+                    if (inventory.items[event.getSlot()] instanceof PrefixItem prefix) {
+                        prefix.setPrefix(p);
+                    }
+                    inventory.setupItems();
                 }
             }.runTaskAsynchronously(plugin);
         }

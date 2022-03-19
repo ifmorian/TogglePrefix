@@ -32,6 +32,7 @@ public class ScoreboardManager {
         for (String t : teams) {
             sb.registerNewTeam(t);
         }
+        updatePlayers();
     }
 
     public void updatePlayer(Player p) {
