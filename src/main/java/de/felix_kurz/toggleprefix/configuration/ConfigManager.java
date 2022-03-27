@@ -28,13 +28,6 @@ public class ConfigManager {
 
         if (cfg.get("useColorTranslate") == null) cfg.set("useColorTranslate", true);
         if (cfg.get("autoUpdate") == null) cfg.set("autoUpdate", true);
-        if (cfg.get("database") == null) {
-            cfg.set("database.dbHost", "localhost");
-            cfg.set("database.dbPort", "3306");
-            cfg.set("database.dbName", "toggleprefix");
-            cfg.set("database.username", "root");
-            cfg.set("database.dbHost", "");
-        }
         if (cfg.get("tablistHeader") == null) {
             List<String> defaultHeader = new ArrayList<>();
             defaultHeader.add("&bTogglePrefix\n&5Eine random Message");
@@ -48,6 +41,13 @@ public class ConfigManager {
             defaultFooter.add("&cSpieler Online: &4%onlinePlayers%/%maxPlayers%");
             defaultFooter.add("&aSpieler Online: &2%onlinePlayers%/%maxPlayers%");
             cfg.set("tablistFooter", defaultFooter);
+        }
+        if (cfg.get("database") == null) {
+            cfg.set("database.dbHost", "localhost");
+            cfg.set("database.dbPort", "3306");
+            cfg.set("database.dbName", "toggleprefix");
+            cfg.set("database.username", "root");
+            cfg.set("database.password", "");
         }
         save();
     }

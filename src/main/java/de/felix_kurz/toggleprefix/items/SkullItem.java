@@ -9,13 +9,20 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.util.UUID;
+
 public class SkullItem extends InventoryItem {
 
-    private String ownerName;
+    public String ownerName;
 
     public SkullItem(String ownerName, String title, boolean enchanted, Main plugin) {
         super(title, Material.PLAYER_HEAD, enchanted, plugin);
         this.ownerName = ownerName;
+    }
+
+    public SkullItem(UUID ownerID, String title, boolean enchanted, Main plugin) {
+        super(title, Material.PLAYER_HEAD, enchanted, plugin);
+        this.ownerName = Bukkit.getOfflinePlayer(ownerID).getName();
     }
 
     @Override

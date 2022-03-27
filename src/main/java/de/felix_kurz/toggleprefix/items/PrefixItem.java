@@ -2,7 +2,7 @@ package de.felix_kurz.toggleprefix.items;
 
 import de.felix_kurz.toggleprefix.main.Main;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 public class PrefixItem extends InventoryItem {
 
@@ -13,7 +13,7 @@ public class PrefixItem extends InventoryItem {
         this.name = name;
     }
 
-    public void setPrefix(Player p) {
+    public void setPrefix(OfflinePlayer p) {
         plugin.getMysql().editPlayer(p, "prefix", name);
     }
 

@@ -11,6 +11,7 @@ public record JoinListener(Main plugin) implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        if(plugin.getMysql().getConn() == null) return;
         new BukkitRunnable() {
             @Override
             public void run() {

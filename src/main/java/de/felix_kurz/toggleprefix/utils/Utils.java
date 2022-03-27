@@ -1,14 +1,27 @@
 package de.felix_kurz.toggleprefix.utils;
 
+import de.felix_kurz.toggleprefix.main.Main;
+import org.bukkit.entity.Player;
+
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
 public class Utils {
-    public static byte[] UUIDtoByte(UUID id) {
+    public static byte[] UUIDtoBytes(UUID id) {
         ByteBuffer buffer = ByteBuffer.allocate(16);
         buffer.putLong(id.getMostSignificantBits());
         buffer.putLong(id.getLeastSignificantBits());
         return buffer.array();
+    }
+
+    public static UUID BytestoUUID(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        long high = byteBuffer.getLong();
+        long low = byteBuffer.getLong();
+        return new UUID(high, low);
+    }
+    public static void error(Player p) {
+        p.sendMessage(Main.PRE + "§cEtwas ist schiefgelaufen");
     }
 
     public static String convertToLetters(String s) {

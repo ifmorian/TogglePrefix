@@ -3,6 +3,7 @@ package de.felix_kurz.toggleprefix.inventories;
 import de.felix_kurz.toggleprefix.databases.MySQL;
 import de.felix_kurz.toggleprefix.items.InventoryItem;
 import de.felix_kurz.toggleprefix.main.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -22,7 +23,7 @@ public abstract class PlayerInventory {
 
     public InventoryItem[] items;
 
-    public static Map<UUID, SetprefixInventory> openInventories = new HashMap<>();
+    public static Map<UUID, PlayerInventory> openInventories = new HashMap<>();
 
     public PlayerInventory(Main plugin, Player p, String title, int size) {
         this.plugin = plugin;
@@ -31,6 +32,12 @@ public abstract class PlayerInventory {
         this.size = size;
         mySQL = plugin.getMysql();
         this.items =  new InventoryItem[size];
+        inventory = Bukkit.createInventory(p, size, title);
+    }
+
+    public void open() {
+        setupItems();
+        p.openInventory(inventory);
     }
 
     public abstract void setupItems();
