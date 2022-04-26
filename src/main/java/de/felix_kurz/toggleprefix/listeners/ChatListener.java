@@ -29,7 +29,8 @@ public class ChatListener implements Listener {
         chatprefix = chatprefix.replace("%name%", p.getDisplayName());
         chatprefix = Utils.colorTranslate(chatprefix);
         String msg = event.getMessage();
-        event.setFormat(chatprefix + " " + (plugin.getCfgM().useColorTranslate() ? Utils.colorTranslate((msg)) : msg));
+        if (plugin.getCfgM().useColorTranslate()) event.setMessage(Utils.colorTranslate((event.getMessage())));
+        event.setFormat(chatprefix + " " + "%2$s");
     }
 
 }
